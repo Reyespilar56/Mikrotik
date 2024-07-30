@@ -1,0 +1,190 @@
+<!--
+// Mirka
+// Brayan Gonzalez
+// Eduardo Reyes
+
+-->
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tabla de Elementos</title>
+    <link rel="stylesheet" href="styles.css">
+    <img src="https://digy.com.mx/wp-content/uploads/2021/02/logo1sinfondo_Mesa-de-trabajo-1-1024x264.png" alt="Imagen del producto">
+</head>
+<body>
+    <h1>INTERFAS MIKROTIK</h1>
+    <table id="elementTable">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>NAME</th>
+                <th>TYPE</th>
+                <th>MTU</th>
+                <th>L2MTU</th>
+                <th>RUNNING</th>
+                <th>COMMENT</th>
+                <th>SFP TR</th>
+                <th>SFP XR</th>
+            </tr>
+        </thead>
+        <tbody>
+            <!-- The table body will be dynamically populated -->
+        </tbody>
+    </table>
+    
+    <style>body {
+        font-family: Arial, sans-serif;
+        background-color: #f0f0f0;
+        color: #333;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        height: 100vh; /* Ajusta la altura para que ocupe toda la ventana */
+        margin: 0;
+    }
+    
+    h1 {
+        margin-bottom: 20px; /* Espacio debajo del título */
+    }
+    
+    img {
+        width: 100%; /* Ajusta el tamaño según sea necesario */
+        max-width: 500px; /* Limita el tamaño máximo si es necesario */
+        height: auto; /* Mantiene la proporción de la imagen */
+        display: block; /* Elimina el espacio extra debajo de la imagen */
+        margin-bottom: 20px; /* Espacio debajo de la imagen */
+    }
+    
+    table {
+        border-collapse: collapse;
+        width: 100%;
+        max-width: 1200px; /* Ajusta el ancho máximo si es necesario */
+        margin: 20px auto;
+        background-color: #fff; /* Fondo blanco para la tabla */
+    }
+    
+    th, td {
+        border: 1px solid #ddd;
+        padding: 8px;
+        text-align: left;
+    }
+    
+    th {
+        background-color: #f2f2f2;
+        font-weight: bold;
+    }
+    
+    thead th {
+        position: sticky;
+        top: 0;
+        background-color: #f2f2f2;
+        z-index: 1;
+    }
+    
+    </style>
+    <script>
+      async function fetchStatus() {
+    try {
+        // Realiza la solicitud al servidor
+        const response = await fetch('http://localhost:3100/SFP');
+        
+        // Verifica si la respuesta fue exitosa
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        // Analiza la respuesta como JSON
+        const jsonResponse = await response.json(); 
+        console.log('JSON response:', jsonResponse); // Verifica la respuesta en la consola
+
+        // Verifica si el objeto JSON tiene éxito y contiene datos
+        if (jsonResponse.success !== true || !Array.isArray(jsonResponse.data)) {
+            throw new Error('La respuesta no contiene datos válidos');
+        }
+        const data =JSON.parse(localStorage.getItem('data'));
+        const statusData = data; // Obtiene el array de dispositivos
+        console.log("data funciona",data);
+        console.log('Datos recibidos:', statusData);
+        // Obtiene la referencia al cuerpo de la tabla
+        const statusTableBody = document.getElementById('elementTable').querySelector('tbody');
+        statusTableBody.innerHTML = ''; // Limpia la tabla antes de insertar nuevos datos
+
+        // Recorre cada dispositivo y sus interfaces para crear una fila en la tabla
+        statusData.forEach(interface => {
+           // if (device.interfaces) {
+           //     device.forEach(interface => {
+                    const row = document.createElement('tr');
+
+                    const idCell = document.createElement('td');
+                    idCell.innerText = interface.id || 'No disponible';
+                    row.appendChild(idCell);
+
+                    const nameCell = document.createElement('td');
+                    nameCell.innerText = interface.name || 'No disponible';
+                    row.appendChild(nameCell);
+
+                    const typeCell = document.createElement('td');
+                    typeCell.innerText = interface.type || 'No disponible';
+                    row.appendChild(typeCell);
+
+                    const mtuCell = document.createElement('td');
+                    mtuCell.innerText = interface.mtu || 'No disponible';
+                    row.appendChild(mtuCell);
+
+                    const mtu12Cell = document.createElement('td');
+                     mtu12Cell.innerText = interface.l2mtu || 'No disponible';
+                     row.appendChild(mtu12Cell);
+
+                    const runningCell = document.createElement('td');
+                    const isRunning = interface.running ? 'Sí' : 'No';
+                    runningCell.innerText = isRunning;
+
+                    // Cambiar el color de fondo según el valor
+                    if (isRunning === 'Sí') {
+                    runningCell.style.backgroundColor = 'green';
+                     runningCell.style.color = 'white'; // Opcional, para mejorar la legibilidad
+                    } else {
+                   runningCell.style.backgroundColor = 'red';
+                  runningCell.style.color = 'white'; // Opcional, para mejorar la legibilidad
+                    }
+
+                    row.appendChild(runningCell);
+
+
+                    const commentCell = document.createElement('td');
+                    commentCell.innerText = interface.comment || 'No disponible';
+                    row.appendChild(commentCell);
+
+                    const sfpTRCell = document.createElement('td');
+                    sfpTRCell.innerText = interface.sfpTxPower || 'No disponible';
+                    row.appendChild(sfpTRCell);
+
+                    const sfpRXCell = document.createElement('td');
+                    sfpRXCell.innerText = interface.sfpRxPower || 'No disponible';
+                    row.appendChild(sfpRXCell);
+                    console.log("ya porfavor",interface);
+
+                    statusTableBody.appendChild(row);
+                });
+           // } else {
+         //       console.error('No se encontraron interfaces para el dispositivo:', device);
+           // }
+     //   });
+
+    } catch (error) {
+        // Manejo de errores
+        console.error('Error al obtener el estado:', error);
+        const statusTableBody = document.getElementById('elementTable').querySelector('tbody');
+        statusTableBody.innerHTML = `<tr><td colspan="8">Error al obtener el estado: ${error.message}</td></tr>`;
+    }
+}
+
+// Llama a fetchStatus cuando el DOM se haya cargado completamente
+document.addEventListener('DOMContentLoaded', fetchStatus);
+
+    </script>
+</body>
+</html>
